@@ -1,14 +1,11 @@
 # grafter.db
 
-A Clojure library designed to ... well, that part is up to you.
+Linked Data & RDF database query tools, built on top of [Grafter](https://github.com/swirrl/grafter).
 
-## Usage
-
-FIXME
 
 ## License
 
-Copyright © 2018 FIXME
+Copyright © Swirrl 2018
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
