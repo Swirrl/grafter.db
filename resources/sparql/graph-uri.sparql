@@ -1,5 +1,0 @@
-SELECT ?g WHERE {
-  GRAPH ?g {
-    ?resource_uri ?p ?o
-  }
-} LIMIT 1

@@ -46,7 +46,7 @@
   GetRepo
   (repo [this]
     (:repo this))
-    
+
   pr/ISPARQLable
   (pr/query-dataset [this sparql-string model]
     ;; NOTE this does not honour the query-cache/evaluation-mode yet.

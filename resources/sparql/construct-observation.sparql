@@ -1,0 +1,13 @@
+PREFIX qb: <http://purl.org/linked-data/cube#>
+
+CONSTRUCT {
+  ?obs a qb:Observation ;
+         ?measure_prop ?measure_val .
+}
+WHERE {
+  ?obs a qb:Observation ;
+         qb:measureType ?measure_prop ;
+         ?measure_prop ?measure_val .
+}
+ORDER BY ?measure_val
+LIMIT 1000

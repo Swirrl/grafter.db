@@ -141,25 +141,15 @@
                                           new-bindings# (merge ~bindings limoffs#)]
                                       (query-fn# ~sparql-resource new-bindings# repo#))))))))
 
-(defmethod ig/init-key :zib.database.triplestore/query [_ _opts]
+(defmethod ig/init-key :grafter.db.triplestore/query [_ _opts]
   (fn [repo sparql-file bindings]
     ((wrap-caching (wrap-eager-evaluation sp/query))
       sparql-file bindings repo)))
 
 (comment
-
-  (defquery graph-uri*
-            "sparql/graph-uri.sparql"
-            [:resource-uri {::sp/limits #{1}}])
-
-  (defquery graph-uri*
-            "sparql/graph-uri.sparql" [])
-
-  (graph-uri repo (URI. "http://foo") 100)
-
-  (graph-uri (assoc repo :evaluation-method :lazy)
-             (URI. "http://foo")
-             {::sp/limits {10 100} ::sp/offsets {0 10}})
-
-  (defquery graph-uri* "sparql/graph-uri.sparql")
-  )
+  (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
+  (def t-store (triplestore/->TripleStoreBoundary nil repo :eager))
+  (defquery observations-qry
+            "sparql/select-observation.sparql"
+            [])
+  (observations-qry t-store {::sp/limits {1000 3}}))
