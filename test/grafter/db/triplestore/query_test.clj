@@ -20,6 +20,10 @@
   "sparql/select-observation.sparql"
   [])
 
+(q/defquery select-observations-bindings-qry
+  "sparql/select-observation.sparql"
+  [:obs])
+
 (q/defquery construct-observations-qry
   "sparql/construct-observation.sparql"
   [])
@@ -44,9 +48,13 @@
         (is (= (:p first-quad) rdf:a))
         (is (= (:o first-quad) qb:Observation)))))
 
-  (testing "simple queries with bindings"
-    ;; TODO
-    ))
+  (testing "simple query with bindings"
+    (let [obs-uri (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
+          result (select-observations-bindings-qry t-store obs-uri)]
+      (is (= (-> result first :measure_val)
+             110.6))
+      (is (= (-> result first :obs)
+             obs-uri)))))
 
 
 
