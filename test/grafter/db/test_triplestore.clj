@@ -9,7 +9,7 @@
 
 (derive :grafter.db/test-triplestore :grafter.db/triplestore)
 
-(defn- add-data! [triplestore update-endpoint load-files]
+(defn add-data! [triplestore update-endpoint load-files]
   (let [update-repo (repo/sparql-repo "" update-endpoint)]
     (doseq [f load-files]
       (println "Loading file " f)

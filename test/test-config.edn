@@ -1,0 +1,12 @@
+{:duct.profile/test
+ {:duct.core/project-ns grafter.db
+
+  :grafter.db/test-triplestore {:load-files ["resources/breeding-birds.nt"]
+                                :query-endpoint #duct/env ["TEST_SPARQL_QUERY_ENDPOINT"
+                                                           :or "http://localhost:5820/grafter-db-dev/query"]
+                                :update-endpoint #duct/env ["TEST_SPARQL_UPDATE_ENDPOINT"
+                                                            :or "http://localhost:5820/grafter-db-dev/update"]}
+  }
+
+ :duct.profile/dev {}
+ :duct.profile/prod {}}
