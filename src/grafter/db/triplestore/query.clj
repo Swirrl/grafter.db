@@ -54,9 +54,7 @@
   sp/query)
 
 (defmethod get-query-fn :default [_]
-  ;; Use the lazy query function from grafter.rdf.sparql
-  ;; Note default here is what sesame Repositories will use
-  sp/query)
+  (wrap-eager-evaluation sp/query))
 
 (defn- rename-binding
   "Rename clojure style hyphenated variable-bindings to sparql style
@@ -64,15 +62,19 @@
   [binding]
   (str/replace (name binding) #"-" "_"))
 
-(defn- generate-bindings [arg]
-  (if (sequential? arg)
-    (let [n (gensym (apply str "values-clause-" (map name arg)))]
-      [arg n])
-    [(keyword (rename-binding arg))
-     (symbol (name arg))]))
+(defn generate-bindings [args-vector]
+  (->> args-vector
+       (map (fn [arg]
+              (if (sequential? arg)
+                (let [n (gensym (apply str "values-clause-" (map name arg)))]
+                  [arg n])
+                [(keyword (rename-binding arg))
+                 (symbol (name arg))])))
+       (into {})))
 
-(defn- make-defquery* [var-name sparql-resource args-vector]
-  (let [doc-args (str/join ", " (map (comp second generate-bindings) args-vector))
+(defn- make-defquery*
+  [var-name sparql-resource args-vector]
+  (let [doc-args (str/join ", " (map second (generate-bindings args-vector)))
         docstring (str "Grafter query function that takes a repo, "
                        doc-args ".\n\n"
                        "It runs the SPARQL query: \n\n"
@@ -95,9 +97,10 @@
 
   (defquery select-spo \"sparql/select-spo.sparql\" [:s])
 
-  Then to select ?p and ?o on an <http://s>
+  Then to select ?p & ?o on an <http://s> pass a bindings map of
+  SPARQL var name to its val:
 
-  (select-spo (URI. \"http://s\"))
+  (select-spo {:s (URI. \"http://s\")})
 
   Generated query functions take an optional map of options as their
   last parameter.  Valid options are:
@@ -128,18 +131,21 @@
   ([var-name sparql-resource args-vector]
    (make-defquery* var-name sparql-resource args-vector))
   ([var-name docstring sparql-resource args-vector]
-   (let [args (map generate-bindings args-vector)
-         bindings (into {} args)
-         arg-names (map second args)]
+   (let [bindings (generate-bindings args-vector)
+         binding-args (map second bindings)]
+     `(def ~var-name
+        ~docstring
+        (fn ~'graph-fn
+          ([repo# ~@binding-args]
+            (~'graph-fn repo# ~@binding-args {}))
 
-     `(def ~var-name ~docstring (fn ~'graph-fn
-                                  ([repo# ~@arg-names]
-                                    (~'graph-fn repo# ~@arg-names {}))
-                                  ([repo# ~@arg-names {:keys [~'evaluation-method] :as opts#}]
-                                    (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
-                                          limoffs# (select-keys opts# [::sp/limits ::sp/offsets])
-                                          new-bindings# (merge ~bindings limoffs#)]
-                                      (query-fn# ~sparql-resource new-bindings# repo#))))))))
+          ([repo# ~@binding-args {:keys [~'evaluation-method] :as opts#}]
+            (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
+                  limoffs# (select-keys opts# [::sp/limits ::sp/offsets])
+                  new-bindings# (merge ~@binding-args limoffs#)]
+              (query-fn# ~sparql-resource
+                         new-bindings#
+                         repo#))))))))
 
 (defmethod ig/init-key :grafter.db.triplestore/query [_ _opts]
   (fn [repo sparql-file bindings]

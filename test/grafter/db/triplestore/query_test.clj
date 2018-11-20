@@ -18,9 +18,27 @@
   "sparql/select-observation.sparql"
   [:obs])
 
+(q/defquery select-observations-values-clause-qry
+  "sparql/select-observation-by-values.sparql"
+  [[:obs]])
+
 (q/defquery construct-observations-qry
   "sparql/construct-observation.sparql"
   [])
+
+(deftest generate-query-bindings-test
+  (testing "binding is a map of :key var-name tuples"
+    (let [bindings (q/generate-bindings [:foo :bar])]
+      (is (= bindings
+             {:foo 'foo
+              :bar 'bar}))))
+
+  (testing "sequential binding keys generate a VALUES clause binding"
+    (let [bindings (q/generate-bindings [:foo [:baz :qux]])]
+      (is (= (:foo bindings) 'foo))
+      (is (->> (get bindings [:baz :qux])
+               (name)
+               (re-matches #"values-clause-bazqux\d{5}"))))))
 
 (deftest defquery-test
   (let [t-store (:grafter.db/test-triplestore th/*test-system*)]
@@ -43,13 +61,23 @@
           (is (= (:p first-quad) rdf:a))
           (is (= (:o first-quad) qb:Observation)))))
 
-    (testing "simple query with bindings"
+    (testing "simple query with binding"
       (let [obs-uri (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
-            result (select-observations-bindings-qry t-store obs-uri)]
+            result (select-observations-bindings-qry t-store {:obs obs-uri})]
         (is (= (-> result first :measure_val)
                110.6))
         (is (= (-> result first :obs)
-               obs-uri))))))
+               obs-uri))))
+
+    (testing "simple query with VALUES bindings"
+      (let [obs-uri1 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/1994/S92000003/index-1994-100/count")
+            obs-uri2 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
+            result (select-observations-values-clause-qry t-store {:obs [obs-uri1 obs-uri2]})]
+        (is (= 2 (count result)))
+        (is (= (-> result first :measure_val)
+               100N))
+        (is (= (-> result first :obs)
+               obs-uri1))))))
 
 
 
