@@ -1,0 +1,45 @@
+# Required environment variables
+# ------------------------------
+# The following must be configured in the Travis settings control panel:
+#
+# RELEASE_OAUTH_TOKEN (GitHub) with `repo` and `push` scopes
+#
+# Amazon S3
+# ---------
+#
+# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION
+
+language: clojure
+
+env:
+  global:
+  - ARTIFACTS_DIR=~/$TRAVIS_BUILD_NUMBER
+  - SWIRRL_JARS_BUCKET=swirrl-jars/releases/swirrl/grafter.db
+  - TEMP_DIR=~/$TRAVIS_BUILD_NUMBER
+
+before_install:
+- pip install --upgrade requests pyopenssl; pip install --user awscli
+
+script:
+- lein jar
+
+# DEPLOY JAR
+# Travis does not allow deploy stage to run on pull request, so we're doing it here
+# copy jar to private S3 swirrl jars
+- lein deploy
+
+# DEPLOY to GitHub (when tagged)
+deploy:
+  provider: releases
+  api_key: $RELEASE_OAUTH_TOKEN
+  file_glob: true
+  file: target/grafter-db-*.jar
+  skip_cleanup: true
+  prerelease: true
+  overwrite: true
+  on:
+    tags: true
+    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+
+jdk:
+- oraclejdk8

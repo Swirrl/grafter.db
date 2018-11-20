@@ -1,4 +1,4 @@
-(defproject grafter/db "0.2.0-SNAPSHOT"
+(defproject grafter.db "0.2.0-SNAPSHOT"
   :description "Grafter SPARQL database query tools"
   :url "https://github.com/Swirrl/grafter.db"
   :license {:name "Eclipse Public License"
@@ -23,6 +23,8 @@
                  :resource-paths ["test/resources"]}}
 
   :plugins [[s3-wagon-private "1.3.1"]]
+
+  :jar-exclusions [#"^sparql"]
 
   :release-tasks [["vcs" "assert-committed"]
                   ["deploy" "swirrl-jars"]]
