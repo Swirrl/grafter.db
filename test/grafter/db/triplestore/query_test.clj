@@ -38,7 +38,7 @@
       (is (= (:foo bindings) 'foo))
       (is (->> (get bindings [:baz :qux])
                (name)
-               (re-matches #"values-clause-bazqux\d{5}"))))))
+               (re-matches #"values-clause-bazqux\d+"))))))
 
 (deftest defquery-test
   (let [t-store (:grafter.db/test-triplestore th/*test-system*)]
