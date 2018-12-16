@@ -127,8 +127,11 @@
     `(def ~var-name
        ~docstring
        (fn ~'graph-fn
+         ([repo#]
+           (~'graph-fn repo# nil nil))
+
          ([repo# binding-args#]
-           (~'graph-fn repo# binding-args# {}))
+           (~'graph-fn repo# binding-args# nil))
 
          ([repo# binding-args#
            {:keys [~'evaluation-method] :as opts#}]

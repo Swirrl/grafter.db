@@ -48,7 +48,15 @@
 (deftest defquery-test
   (let [t-store (:grafter.db/test-triplestore th/*test-system*)]
     (testing "simple queries without bindings"
-      (testing "select query returns collection of observations hash-maps"
+      (testing "select query (without limits) returns collection of observations hash-maps"
+        (let [results (select-observations-qry t-store)
+              first-obs (first results)]
+          (is (= (count results) 21))
+          (is (= (:measure_val first-obs) 100N))
+          (is (= (:obs first-obs)
+                 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/1994/S92000003/index-1994-100/count")))))
+
+      (testing "select query (with limits) returns collection of observations hash-maps"
         (let [results (select-observations-qry t-store {::sp/limits {1000 3}})
               first-obs (first results)]
           (is (= (count results) 3))
