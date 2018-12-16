@@ -66,21 +66,11 @@
   (->> args-vector
        (map (fn [arg]
               (if (sequential? arg)
-                (let [n (gensym (apply str "values-clause-" (map name arg)))]
+                (let [n (gensym (apply str "values-clause-" (map (comp symbol name) arg)))]
                   [arg n])
                 [(keyword (rename-binding arg))
                  (symbol (name arg))])))
        (into {})))
-
-(defn- make-defquery*
-  [var-name sparql-resource args-vector]
-  (let [doc-args (str/join ", " (map second (generate-bindings args-vector)))
-        docstring (str "Grafter query function that takes a repo, "
-                       doc-args ".\n\n"
-                       "It runs the SPARQL query: \n\n"
-                       (slurp (io/resource sparql-resource)) "\n"
-                       "With the variables " doc-args " bound to the supplied values.")]
-    `(defquery ~var-name ~docstring ~sparql-resource ~args-vector)))
 
 (defmacro defquery
   "Define a function named var-name for running a sparql query via
@@ -127,35 +117,29 @@
 
   NOTE also that SPARQL variables ?snake_style variable can be
   referenced with clojure-style-kebab-case names."
+  [var-name sparql-resource args-vector]
+  (let [doc-args (generate-bindings args-vector)
+        docstring (str "Grafter query function that takes a repo, "
+                       doc-args ".\n\n"
+                       "It runs the SPARQL query: \n\n"
+                       (slurp (io/resource sparql-resource)) "\n"
+                       "With the variables " doc-args " bound to the supplied values.")]
+    `(def ~var-name
+       ~docstring
+       (fn ~'graph-fn
+         ([repo# binding-args#]
+           (~'graph-fn repo# binding-args# {}))
 
-  ([var-name sparql-resource args-vector]
-   (make-defquery* var-name sparql-resource args-vector))
-  ([var-name docstring sparql-resource args-vector]
-   (let [bindings (generate-bindings args-vector)
-         binding-args (map second bindings)]
-     `(def ~var-name
-        ~docstring
-        (fn ~'graph-fn
-          ([repo# ~@binding-args]
-            (~'graph-fn repo# ~@binding-args {}))
-
-          ([repo# ~@binding-args {:keys [~'evaluation-method] :as opts#}]
-            (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
-                  limoffs# (select-keys opts# [::sp/limits ::sp/offsets])
-                  new-bindings# (merge ~@binding-args limoffs#)]
-              (query-fn# ~sparql-resource
-                         new-bindings#
-                         repo#))))))))
+         ([repo# binding-args#
+           {:keys [~'evaluation-method] :as opts#}]
+           (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
+                 limoffs# (select-keys opts# [::sp/limits ::sp/offsets])
+                 new-bindings# (merge binding-args# limoffs#)]
+             (query-fn# ~sparql-resource
+                        new-bindings#
+                        repo#)))))))
 
 (defmethod ig/init-key :grafter.db.triplestore/query [_ _opts]
   (fn [repo sparql-file bindings]
     ((wrap-caching (wrap-eager-evaluation sp/query))
       sparql-file bindings repo)))
-
-(comment
-  (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
-  (def t-store (triplestore/->TripleStoreBoundary nil repo :eager))
-  (defquery observations-qry
-            "sparql/select-observation.sparql"
-            [])
-  (observations-qry t-store {::sp/limits {1000 3}}))

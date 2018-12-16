@@ -18,6 +18,10 @@
   "sparql/select-observation.sparql"
   [:obs])
 
+(q/defquery select-multiple-bindings-qry
+  "sparql/select-s-p-o.sparql"
+  [:s :p])
+
 (q/defquery select-observations-values-clause-qry
   "sparql/select-observation-by-values.sparql"
   [[:obs]])
@@ -38,7 +42,8 @@
       (is (= (:foo bindings) 'foo))
       (is (->> (get bindings [:baz :qux])
                (name)
-               (re-matches #"values-clause-bazqux\d+"))))))
+               (re-matches #"values-clause-bazqux\d+")))))
+)
 
 (deftest defquery-test
   (let [t-store (:grafter.db/test-triplestore th/*test-system*)]
@@ -69,6 +74,13 @@
         (is (= (-> result first :obs)
                obs-uri))))
 
+    (testing "query with multiple key-value pairs in binding hash-map"
+      (let [s (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2012/S92000003/index-1994-100/count")
+            p (URI. "http://statistics.gov.scot/def/measure-properties/count")
+            result (select-multiple-bindings-qry t-store {:s s :p p})]
+        (is (= (-> result first)
+               {:o 116.4}))))
+
     (testing "simple query with VALUES bindings"
       (let [obs-uri1 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/1994/S92000003/index-1994-100/count")
             obs-uri2 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
@@ -79,5 +91,10 @@
         (is (= (-> result first :obs)
                obs-uri1))))))
 
+(comment
+  (require '[grafter.rdf.repository :as repo])
+  (require '[grafter.db.triplestore.impl :as triplestore])
+  (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
+  (def t-store (triplestore/->TripleStoreBoundary nil repo :eager)))
 
 
