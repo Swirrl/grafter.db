@@ -1,4 +1,4 @@
-(defproject grafter.db "0.2.0-SNAPSHOT"
+(defproject grafter.db "0.3.0-SNAPSHOT"
   :description "Grafter SPARQL database query tools"
   :url "https://github.com/Swirrl/grafter.db"
   :license {:name "Eclipse Public License"
@@ -6,7 +6,7 @@
 
   :min-lein-version "2.5.0"
 
-  :dependencies [[org.clojure/clojure "1.10.0-RC3"]
+  :dependencies [[org.clojure/clojure "1.10.0-RC5"]
                  [org.clojure/core.cache "0.7.1"]
 
                  [com.taoensso/timbre "4.10.0"]
