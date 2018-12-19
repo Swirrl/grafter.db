@@ -24,7 +24,7 @@
 
 (q/defquery select-renamed-bindings-qry
   "sparql/select-s-p-o-rename.sparql"
-  [:s])
+  [:key-to-be-renamed])
 
 (q/defquery select-observations-values-clause-qry
   "sparql/select-observation-by-values.sparql"
