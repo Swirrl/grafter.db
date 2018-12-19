@@ -6,7 +6,7 @@
 
   :min-lein-version "2.5.0"
 
-  :dependencies [[org.clojure/clojure "1.10.0-RC5"]
+  :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/core.cache "0.7.1"]
 
                  [com.taoensso/timbre "4.10.0"]
