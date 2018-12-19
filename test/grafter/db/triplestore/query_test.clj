@@ -22,6 +22,10 @@
   "sparql/select-s-p-o.sparql"
   [:s :p])
 
+(q/defquery select-renamed-bindings-qry
+  "sparql/select-s-p-o-rename.sparql"
+  [:s])
+
 (q/defquery select-observations-values-clause-qry
   "sparql/select-observation-by-values.sparql"
   [[:obs]])
@@ -77,6 +81,7 @@
     (testing "simple query with binding"
       (let [obs-uri (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
             result (select-observations-bindings-qry t-store {:obs obs-uri})]
+        (is (= 1 (count result)))
         (is (= (-> result first :measure_val)
                110.6))
         (is (= (-> result first :obs)
@@ -86,8 +91,22 @@
       (let [s (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2012/S92000003/index-1994-100/count")
             p (URI. "http://statistics.gov.scot/def/measure-properties/count")
             result (select-multiple-bindings-qry t-store {:s s :p p})]
+        (is (= 1 (count result)))
         (is (= (-> result first)
                {:o 116.4}))))
+
+    (testing "query with var bindings and limits in same hash-map"
+      (let [s (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2012/S92000003/index-1994-100/count")
+            unlimited-result (select-multiple-bindings-qry t-store {:s s})
+            limited-result (select-multiple-bindings-qry t-store {:s s ::sp/limits {500 4}})]
+        (is (= 7 (count unlimited-result)))
+        (is (= 4 (count limited-result)))))
+
+    (testing "query with kebab-case var bindings that require renaming to snake_case"
+      (let [s (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2012/S92000003/index-1994-100/count")
+            result (select-renamed-bindings-qry t-store {:key-to-be-renamed s})]
+        ;; would be 197 results if renaming failed
+        (is (= 7 (count result)))))
 
     (testing "simple query with VALUES bindings"
       (let [obs-uri1 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/1994/S92000003/index-1994-100/count")

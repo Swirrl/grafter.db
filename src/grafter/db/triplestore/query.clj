@@ -9,6 +9,12 @@
             [grafter.db.triplestore.impl :as triplestore])
   (:import grafter.db.triplestore.impl.TripleStoreBoundary))
 
+(defn keyname
+  "For namespaced keywords, (name) only returns the keyword part.
+  This function returns the namespace and keyword"
+  [key]
+  (str (namespace key) "/" (name key)))
+
 (defprotocol EvaluationMethod
   (evaluation-method [this]))
 
@@ -56,11 +62,19 @@
 (defmethod get-query-fn :default [_]
   (wrap-eager-evaluation sp/query))
 
-(defn- rename-binding
+(defn kmap
+  "update all keys in a hash-map with function"
+  [f m]
+  (into {} (map #(update-in % [0] f) m)))
+
+(defn rename-binding
   "Rename clojure style hyphenated variable-bindings to sparql style
   underscored_bindings."
   [binding]
-  (str/replace (name binding) #"-" "_"))
+  (str/replace (if (qualified-keyword? binding)
+                 (keyname binding)
+                 (name binding))
+               #"-" "_"))
 
 (defn generate-bindings [args-vector]
   (->> args-vector
@@ -74,33 +88,31 @@
 
 (defmacro defquery
   "Define a function named var-name for running a sparql query via
-  grafter.rdf/sparql that is defined in the given sparql-resource
-  file.  The symbols used for argument are expected to map directly to
-  variables in the query.
+  grafter.rdf/sparql that is defined in the given sparql-resource file. The
+  symbols used for argument are expected to map directly to variables in the
+  query.
 
   e.g. for a SPARQL resource-file containing the query:
 
   SELECT * WHERE { ?s ?p ?o }
 
-  The declaration should contain keywords defining the variables you
-  wish to bind.  e.g.
+  The declaration should contain keywords defining the variables you wish to bind.
+  e.g.:
 
   (defquery select-spo \"sparql/select-spo.sparql\" [:s])
 
-  Then to select ?p & ?o on an <http://s> pass a bindings map of
-  SPARQL var name to its val:
+  Then to select ?p & ?o on an <http://s> pass a bindings map of SPARQL var
+  name to its val:
 
   (select-spo {:s (URI. \"http://s\")})
 
-  Generated query functions take an optional map of options as their
-  last parameter.  Valid options are:
+  Special namespaced keyword bindings can be supplied for limits & offsets:
 
-  - :evaluation-method a keyword for the evaluation function (see get-query-fn)
   - :grafter.rdf.sparql/limits
   - :grafter.rdf.sparql/offsets
 
-  ::sp/limits and ::sp/offsets both take a map of of limits that
-  correspond to the overrides in the query.  For example with the query:
+  ::sp/limits and ::sp/offsets both take a map of of limits that correspond to
+  the overrides in the query.  For example with the query:
 
   SELECT * WHERE {
     SELECT ?s WHERE {
@@ -108,15 +120,19 @@
     } LIMIT 10
   } LIMIT 1
 
-  We can override both the inner and outer limits by specifying a
-  value of:
+  We can override both the inner and outer limits by specifying a value of:
 
   {::sp/limits {10 100 ;; override inner limit with 100
                 1 1000 ;; override outer limit with 1000
   }}
 
-  NOTE also that SPARQL variables ?snake_style variable can be
-  referenced with clojure-style-kebab-case names."
+  Generated query functions take an optional map of options as their last
+  parameter.  Valid options are:
+
+  - evaluation-method a keyword for the evaluation function (see get-query-fn)
+
+  NOTE also that SPARQL variables ?snake_style variable can be referenced with
+  clojure-style-kebab-case names."
   [var-name sparql-resource args-vector]
   (let [doc-args (generate-bindings args-vector)
         docstring (str "Grafter query function that takes a repo, "
@@ -136,8 +152,7 @@
          ([repo# binding-args#
            {:keys [~'evaluation-method] :as opts#}]
            (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
-                 limoffs# (select-keys opts# [::sp/limits ::sp/offsets])
-                 new-bindings# (merge binding-args# limoffs#)]
+                 new-bindings# (kmap #(-> % rename-binding keyword) binding-args#)]
              (query-fn# ~sparql-resource
                         new-bindings#
                         repo#)))))))

@@ -1,0 +1,4 @@
+SELECT *
+	WHERE { ?key_to_be_renamed ?p ?o }
+
+LIMIT 500
