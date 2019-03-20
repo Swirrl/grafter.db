@@ -2,11 +2,11 @@
   (:require [clojure.test :refer :all]
             [grafter.db.test-helpers :as th]
             [grafter.db.triplestore.query :as q]
-            [grafter.rdf.sparql :as sp]
+            [grafter-2.rdf4j.sparql :as sp]
             [grafter.vocabularies.qb :refer :all]
             [grafter.vocabularies.rdf :refer :all])
   (:import (java.net URI)
-           (grafter.rdf.protocols Quad)))
+           (grafter_2.rdf.protocols Quad)))
 
 (use-fixtures :once (th/wrap-test-system [:duct.profile/test]))
 
@@ -119,7 +119,7 @@
                obs-uri1))))))
 
 (comment
-  (require '[grafter.rdf.repository :as repo])
+  (require '[grafter-2.rdf4j.repository :as repo])
   (require '[grafter.db.triplestore.impl :as triplestore])
   (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
   (def t-store (triplestore/->TripleStoreBoundary nil repo :eager)))

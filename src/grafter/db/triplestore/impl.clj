@@ -1,7 +1,7 @@
 (ns grafter.db.triplestore.impl
-  (:require [grafter.rdf.protocols :as pr]
-            [grafter.rdf.repository :as repo])
-  (:import [org.openrdf.repository Repository RepositoryConnection]))
+  (:require [grafter-2.rdf.protocols :as pr]
+            [grafter-2.rdf4j.repository :as repo])
+  (:import [org.eclipse.rdf4j.repository Repository RepositoryConnection]))
 
 
 ;; Use build-triple-store to construct these
