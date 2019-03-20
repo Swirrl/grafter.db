@@ -4,8 +4,8 @@
             [integrant.core :as ig]
             [clojure.string :as str]
             [taoensso.timbre :as log]
-            [grafter.rdf.repository :as repo]
-            [grafter.rdf.sparql :as sp]
+            [grafter-2.rdf4j.repository :as repo]
+            [grafter-2.rdf4j.sparql :as sp]
             [grafter.db.triplestore.impl :as triplestore])
   (:import grafter.db.triplestore.impl.TripleStoreBoundary))
 
@@ -69,12 +69,14 @@
 
 (defn rename-binding
   "Rename clojure style hyphenated variable-bindings to sparql style
-  underscored_bindings."
+  underscored_bindings.  Exclude ::sp/limits and ::sp/offsets."
   [binding]
-  (str/replace (if (qualified-keyword? binding)
-                 (keyname binding)
-                 (name binding))
-               #"-" "_"))
+  (let [binding-str (if (qualified-keyword? binding)
+                      (keyname binding)
+                      (name binding))]
+    (if (#{::sp/limits ::sp/offsets} binding)
+      binding-str
+      (str/replace binding-str #"-" "_"))))
 
 (defn generate-bindings [args-vector]
   (->> args-vector
@@ -88,7 +90,7 @@
 
 (defmacro defquery
   "Define a function named var-name for running a sparql query via
-  grafter.rdf/sparql that is defined in the given sparql-resource file. The
+  grafter-2.rdf4j/sparql that is defined in the given sparql-resource file. The
   symbols used for argument are expected to map directly to variables in the
   query.
 
@@ -108,8 +110,8 @@
 
   Special namespaced keyword bindings can be supplied for limits & offsets:
 
-  - :grafter.rdf.sparql/limits
-  - :grafter.rdf.sparql/offsets
+  - :grafter-2.rdf4j.sparql/limits
+  - :grafter-2.rdf4j.sparql/offsets
 
   ::sp/limits and ::sp/offsets both take a map of of limits that correspond to
   the overrides in the query.  For example with the query:

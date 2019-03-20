@@ -1,16 +1,15 @@
 (ns grafter.db.triplestore
   (:require [clojure.java.io :as io]
             [taoensso.timbre :as log]
-            [grafter.rdf :as rdf]
-            [grafter.rdf.io :as rio]
-            [grafter.rdf.protocols :as pr]
-            [grafter.rdf.repository :as repo]
+            [grafter-2.rdf4j.io :as rio]
+            [grafter-2.rdf.protocols :as pr]
+            [grafter-2.rdf4j.repository :as repo]
             [integrant.core :as ig]
             [clojure.spec.alpha :as s]
             [grafter.db.triplestore.impl :as impl]))
 
 ;; TODO: remove this when Grafter is patched for xsd:Date literals
-(defmethod rio/literal-datatype->type "http://www.w3.org/2001/XMLSchema#date" [literal]
+(defmethod rio/backend-literal->grafter-type "http://www.w3.org/2001/XMLSchema#date" [literal]
   (pr/raw-value literal))
 
 (derive :grafter.db/triplestore :duct/database)
@@ -24,11 +23,11 @@
 
 (defn- add-data! [update-endpoint load-files]
   (when (and update-endpoint (seq load-files))
-    (let [update-repo (repo/sparql-repo "" update-endpoint)]
+    (with-open [conn (repo/->connection (repo/sparql-repo "" update-endpoint))]
       (doseq [f load-files]
         (log/debug ::loading-file f)
-        (rdf/add update-repo (rdf/statements (io/resource f))))
-      (repo/shutdown update-repo))))
+        (pr/add conn (rio/statements (io/resource f))))
+      (repo/shutdown conn))))
 
 (defmethod ig/init-key :grafter.db/triplestore
   [_ {:keys [query-cache query-endpoint load-files update-endpoint] :as _opts}]
