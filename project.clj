@@ -1,4 +1,4 @@
-(defproject grafter.db "0.5.0-SNAPSHOT"
+(defproject grafter.db "0.6.0"
   :description "Grafter SPARQL database query tools"
   :url "https://github.com/Swirrl/grafter.db"
   :license {:name "Eclipse Public License"
