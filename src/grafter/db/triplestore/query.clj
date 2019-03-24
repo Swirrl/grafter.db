@@ -25,18 +25,18 @@
     (:evaluation-method this :eager)))
 
 (defn wrap-eager-evaluation [query-fn]
-  (fn [sparql-file bindings repo]
+  (fn [sparql-file opts bindings repo]
     (with-open [conn (repo/->connection repo)]
-      (let [res (query-fn sparql-file bindings conn)]
+      (let [res (query-fn sparql-file opts bindings conn)]
         (if (seq? res)
           (doall res)
           ;; if not a sequence then its an ask query
           res)))))
 
 (defn wrap-caching [query-fn]
-  (fn [sparql-resource bindings repo]
+  (fn [sparql-resource opts bindings repo]
     (let [run-query (delay
-                      (query-fn sparql-resource bindings repo))
+                      (query-fn sparql-resource opts bindings repo))
           qry-str (slurp (io/resource sparql-resource))]
       (if-let [cache (triplestore/query-cache repo)]
         (let [cache-key {:repo repo :sparql-query qry-str :bindings bindings}]
@@ -97,6 +97,10 @@
   symbols used for argument are expected to map directly to variables in the
   query.
 
+  - `:reasoning?` `true|false` whether or not reasoning/inference should be used
+    in the query. DEFAULT: `false`
+
+
   e.g. for a SPARQL resource-file containing the query:
 
   SELECT * WHERE { ?s ?p ?o }
@@ -134,33 +138,37 @@
   Generated query functions take an optional map of options as their last
   parameter.  Valid options are:
 
-  - evaluation-method a keyword for the evaluation function (see get-query-fn)
+  - `:evaluation-method` a keyword for the evaluation function
+    (see get-query-fn)
 
   NOTE also that SPARQL variables ?snake_style variable can be referenced with
   clojure-style-kebab-case names."
-  [var-name sparql-resource args-vector]
-  (let [doc-args (generate-bindings args-vector)
-        docstring (str "Grafter query function that takes a repo, "
-                       doc-args ".\n\n"
-                       "It runs the SPARQL query: \n\n"
-                       (slurp (io/resource sparql-resource)) "\n"
-                       "With the variables " doc-args " bound to the supplied values.")]
-    `(def ~var-name
-       ~docstring
-       (fn ~'graph-fn
-         ([repo#]
+  ([var-name sparql-resource args-vector]
+   `(defquery ~var-name ~sparql-resource ~args-vector {:reasoning? false}))
+  ([var-name sparql-resource args-vector {:keys [reasoning?] :as opts}]
+   (let [doc-args (generate-bindings args-vector)
+         docstring (str "Grafter query function that takes a repo, "
+                        doc-args ".\n\n"
+                        "It runs the SPARQL query: \n\n"
+                        (slurp (io/resource sparql-resource)) "\n"
+                        "With the variables " doc-args " bound to the supplied values.")]
+     `(def ~var-name
+        ~docstring
+        (fn ~'graph-fn
+          ([repo#]
            (~'graph-fn repo# nil nil))
 
-         ([repo# binding-args#]
+          ([repo# binding-args#]
            (~'graph-fn repo# binding-args# nil))
 
-         ([repo# binding-args#
-           {:keys [~'evaluation-method] :as opts#}]
+          ([repo# binding-args#
+            {:keys [~'evaluation-method] :as opts#}]
            (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
                  new-bindings# (kmap rename-binding binding-args#)]
              (query-fn# ~sparql-resource
+                        ~opts
                         new-bindings#
-                        repo#)))))))
+                        repo#))))))))
 
 (defmethod ig/init-key :grafter.db.triplestore/query [_ _opts]
   (fn [repo sparql-file bindings]
