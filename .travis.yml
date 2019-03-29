@@ -26,15 +26,11 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 
 before_install:
-- pip install --upgrade requests pyopenssl; pip install --user awscli
+  - pip install --upgrade requests pyopenssl; pip install --user awscli
 
 script:
-- lein jar
-
-# DEPLOY JAR
-# Travis does not allow deploy stage to run on pull request, so we're doing it here
-# copy jar to private S3 swirrl jars
-- lein deploy
+  - lein jar
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then lein deploy; fi
 
 # DEPLOY to GitHub (when tagged)
 deploy:
@@ -50,4 +46,4 @@ deploy:
     condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
 
 jdk:
-- oraclejdk8
+  - oraclejdk8
