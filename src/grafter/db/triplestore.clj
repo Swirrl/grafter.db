@@ -36,6 +36,14 @@
     (add-data! update-endpoint load-files)
     triplestore))
 
+;; Update only endpoint
+(defmethod ig/init-key :grafter.db/update-endpoint [_ {:keys [update-endpoint]}]
+  (repo/sparql-repo nil update-endpoint))
+
+(defmethod ig/halt-key! :grafter.db/update-endpoint [_ repo]
+  (repo/shutdown repo))
+
+
 (s/def ::valid-fixture-config (fn [config]
                                 (if (:load-files config)
                                   (:update-endpoint config)

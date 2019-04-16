@@ -6,6 +6,9 @@
                                                            :or "http://localhost:5820/grafter-db-dev/query"]
                                 :update-endpoint #duct/env ["TEST_SPARQL_UPDATE_ENDPOINT"
                                                             :or "http://localhost:5820/grafter-db-dev/update"]}
+
+  :grafter.db/update-endpoint {:update-endpoint #duct/env ["TEST_SPARQL_UPDATE_ENDPOINT"
+                                                           :or "http://localhost:5820/grafter-db-dev/update"]}
   }
 
  :duct.profile/dev {}

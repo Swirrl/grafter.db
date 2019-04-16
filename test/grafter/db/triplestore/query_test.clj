@@ -4,7 +4,9 @@
             [grafter.db.triplestore.query :as q]
             [grafter-2.rdf4j.sparql :as sp]
             [grafter.vocabularies.qb :refer :all]
-            [grafter.vocabularies.rdf :refer :all])
+            [grafter.vocabularies.rdf :refer :all]
+            [grafter-2.rdf4j.repository :as repo]
+            [grafter-2.rdf.protocols :as pr])
   (:import (java.net URI)
            (grafter_2.rdf.protocols Quad)))
 
@@ -118,10 +120,10 @@
         (is (= (-> result first :obs)
                obs-uri1))))))
 
+
+
 (comment
   (require '[grafter-2.rdf4j.repository :as repo])
   (require '[grafter.db.triplestore.impl :as triplestore])
   (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
   (def t-store (triplestore/->TripleStoreBoundary nil repo :eager)))
-
-
