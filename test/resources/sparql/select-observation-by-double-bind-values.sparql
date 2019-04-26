@@ -1,0 +1,9 @@
+PREFIX qb: <http://purl.org/linked-data/cube#>
+
+SELECT ?obs WHERE {
+  VALUES (?p ?o) { UNDEF }
+
+  ?obs a qb:Observation ;
+       ?p ?o .
+}
+LIMIT 1000

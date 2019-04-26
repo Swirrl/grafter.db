@@ -69,14 +69,17 @@
 
 (defn rename-binding
   "Rename clojure style hyphenated variable-bindings to sparql style
-  underscored_bindings.  Exclude ::sp/limits and ::sp/offsets."
+  underscored_bindings. Exclude ::sp/limits and ::sp/offsets."
   [binding]
-  (let [binding-str (if (qualified-keyword? binding)
-                      (keyname binding)
-                      (name binding))]
-    (if (#{::sp/limits ::sp/offsets} binding)
-      binding-str
-      (str/replace binding-str #"-" "_"))))
+  (if (sequential? binding)
+    (into [] (map rename-binding binding))
+    (let [binding-str (if (qualified-keyword? binding)
+                        (keyname binding)
+                        (name binding))]
+      (->> (if (#{::sp/limits ::sp/offsets} binding)
+             binding-str
+             (str/replace binding-str #"-" "_"))
+           (keyword)))))
 
 (defn generate-bindings [args-vector]
   (->> args-vector
@@ -84,7 +87,7 @@
               (if (sequential? arg)
                 (let [n (gensym (apply str "values-clause-" (map (comp symbol name) arg)))]
                   [arg n])
-                [(keyword (rename-binding arg))
+                [(rename-binding arg)
                  (symbol (name arg))])))
        (into {})))
 
@@ -154,7 +157,7 @@
          ([repo# binding-args#
            {:keys [~'evaluation-method] :as opts#}]
            (let [query-fn# (get-query-fn (or ~'evaluation-method (evaluation-method repo#)))
-                 new-bindings# (kmap #(-> % rename-binding keyword) binding-args#)]
+                 new-bindings# (kmap rename-binding binding-args#)]
              (query-fn# ~sparql-resource
                         new-bindings#
                         repo#)))))))

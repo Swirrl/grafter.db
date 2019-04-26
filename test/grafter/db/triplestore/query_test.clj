@@ -28,8 +28,12 @@
   "sparql/select-s-p-o-rename.sparql"
   [:key-to-be-renamed])
 
-(q/defquery select-observations-values-clause-qry
-  "sparql/select-observation-by-values.sparql"
+(q/defquery select-observations-values-single-bind-clause-qry
+  "sparql/select-observation-by-single-bind-values.sparql"
+  [[:obs]])
+
+(q/defquery select-observations-values-double-bind-clause-qry
+  "sparql/select-observation-by-double-bind-values.sparql"
   [[:obs]])
 
 (q/defquery construct-observations-qry
@@ -49,7 +53,7 @@
       (is (->> (get bindings [:baz :qux])
                (name)
                (re-matches #"values-clause-bazqux\d+")))))
-)
+  )
 
 (deftest defquery-test
   (let [t-store (:grafter.db/test-triplestore th/*test-system*)]
@@ -110,15 +114,25 @@
         ;; would be 197 results if renaming failed
         (is (= 7 (count result)))))
 
-    (testing "simple query with VALUES bindings"
+    (testing "simple query with single VALUES bindings"
       (let [obs-uri1 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/1994/S92000003/index-1994-100/count")
             obs-uri2 (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2011/S92000003/index-1994-100/count")
-            result (select-observations-values-clause-qry t-store {:obs [obs-uri1 obs-uri2]})]
+            result (select-observations-values-single-bind-clause-qry t-store {:obs [obs-uri1 obs-uri2]})]
         (is (= 2 (count result)))
         (is (= (-> result first :measure_val)
                100N))
         (is (= (-> result first :obs)
-               obs-uri1))))))
+               obs-uri1))))
+
+    (testing "simple query with double VALUES bindings"
+      (let [p (URI. "http://purl.org/linked-data/sdmx/2009/dimension#refPeriod")
+            o (URI. "http://reference.data.gov.uk/id/year/2006")
+            expected-uri (URI. "http://statistics.gov.scot/data/terrestrial-breeding-birds/year/2006/S92000003/index-1994-100/count")
+            result (select-observations-values-double-bind-clause-qry t-store {[:p :o] [[p o]]})]
+        (is (= 1 (count result)))
+
+        (is (= (-> result first :obs)
+               expected-uri))))))
 
 
 
