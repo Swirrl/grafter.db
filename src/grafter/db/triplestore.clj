@@ -31,7 +31,9 @@
 
 (defmethod ig/init-key :grafter.db/triplestore
   [_ {:keys [query-cache query-endpoint load-files update-endpoint] :as _opts}]
-  (let [repo (repo/sparql-repo query-endpoint)
+  (let [repo (if update-endpoint
+               (repo/sparql-repo query-endpoint update-endpoint)
+               (repo/sparql-repo query-endpoint))
         triplestore (init query-cache repo)]
     (add-data! update-endpoint load-files)
     triplestore))
