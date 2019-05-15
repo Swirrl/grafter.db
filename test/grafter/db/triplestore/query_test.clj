@@ -30,11 +30,11 @@
 
 (q/defquery select-observations-values-single-bind-clause-qry
   "sparql/select-observation-by-single-bind-values.sparql"
-  [[:obs]])
+  [:obs])
 
 (q/defquery select-observations-values-double-bind-clause-qry
   "sparql/select-observation-by-double-bind-values.sparql"
-  [[:obs]])
+  [[:p :o]])
 
 (q/defquery construct-observations-qry
   "sparql/construct-observation.sparql"
