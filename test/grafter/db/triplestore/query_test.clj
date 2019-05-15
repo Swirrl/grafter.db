@@ -139,5 +139,17 @@
 (comment
   (require '[grafter-2.rdf4j.repository :as repo])
   (require '[grafter.db.triplestore.impl :as triplestore])
+
+  (require '[integrant.core :as ig])
+  (require '[grafter.db.test-helpers :as th])
+
+  (def test-system (-> (th/prep-test-system [:duct.profile/test])
+                       (ig/init)))
+
+  (select-observations-values-double-bind-clause-qry (:grafter.db/test-triplestore test-system)
+                                                     {[:p :o] [[(java.net.URI. "http://p") (java.net.URI. "http://o")]]})
+
   (def repo (repo/sparql-repo "http://localhost:5820/grafter-db-dev/query"))
+
+
   (def t-store (triplestore/->TripleStoreBoundary nil repo :eager)))
