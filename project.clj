@@ -11,7 +11,7 @@
 
                  [com.taoensso/timbre "4.10.0"]
                  [duct/core "0.7.0"]
-                 [grafter "2.0.0"]]
+                 [grafter "2.0.2"]]
 
   :profiles
   {:dev [:project/dev :profiles/dev]
