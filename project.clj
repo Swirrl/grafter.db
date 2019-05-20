@@ -1,4 +1,4 @@
-(defproject grafter.db "0.8.3"
+(defproject grafter.db "0.8.4"
   :description "Grafter SPARQL database query tools"
   :url "https://github.com/Swirrl/grafter.db"
   :license {:name "Eclipse Public License"
@@ -8,9 +8,8 @@
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/core.cache "0.7.1"]
-
+                 [integrant "0.7.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [duct/core "0.7.0"]
                  [grafter "2.0.2"]]
 
   :profiles
@@ -21,7 +20,9 @@
                 :jvm-opts ["-Xmx4g"]}]
 
    :profiles/dev {}
-   :project/dev {:jvm-opts [;; never collapse repeated stack traces in dev
+
+   :project/dev {:dependencies [[duct/core "0.7.0"]]
+                 :jvm-opts [;; never collapse repeated stack traces in dev
                             "-XX:-OmitStackTraceInFastThrow"]
                  :resource-paths ["test/resources"]}}
 
