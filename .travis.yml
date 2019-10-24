@@ -10,6 +10,13 @@
 # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION
 
 language: clojure
+sudo: required
+dist: xenial
+services:
+  - xvfb
+
+jdk:
+  - openjdk8
 
 env:
   global:
@@ -44,6 +51,3 @@ deploy:
   on:
     tags: true
     condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
-
-jdk:
-  - oraclejdk8
