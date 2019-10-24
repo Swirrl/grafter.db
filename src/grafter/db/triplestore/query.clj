@@ -50,29 +50,17 @@
                         cache-key))
         @run-query))))
 
-(defn wrap-try-query [query-fn]
-  (fn [sparql-file opts bindings repo]
-    (try
-      (query-fn sparql-file opts bindings repo)
-      (catch Throwable t
-        (let [e (Throwable->map t)]
-          (throw
-            (ex-info (str "Grafter DB: Failure to execute " (:evaluation-method repo) " query against " (:repo repo) ".\n"
-                          (:cause e)
-                          "\nCheck that your DB is running. Check your SPARQL Repo config.")
-                     e)))))))
-
 (defmulti get-query-fn identity)
 
 (defmethod get-query-fn :eager [_]
-  (wrap-caching (wrap-try-query (wrap-eager-evaluation sp/query))))
+  (wrap-caching (wrap-eager-evaluation sp/query)))
 
 (defmethod get-query-fn :lazy [_]
   ;; note we don't cache :lazy queries as they may have very large results
-  (wrap-try-query sp/query))
+  sp/query)
 
 (defmethod get-query-fn :default [_]
-  (wrap-try-query (wrap-eager-evaluation sp/query)))
+  (wrap-eager-evaluation sp/query))
 
 (defn kmap
   "update all keys in a hash-map with function"
@@ -184,5 +172,5 @@
 
 (defmethod ig/init-key :grafter.db.triplestore/query [_ _opts]
   (fn [repo sparql-file bindings]
-    ((wrap-caching (wrap-try-query (wrap-eager-evaluation sp/query)))
+    ((wrap-caching (wrap-eager-evaluation sp/query))
       sparql-file bindings repo)))
