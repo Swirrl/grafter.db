@@ -63,8 +63,9 @@
 (s/def ::fixture-repo (s/keys :req-un [::load-files ::update-endpoint]))
 
 (s/def :grafter.db/triplestore (s/or :fixture-repo ::fixture-repo
-                                       :update-repo ::update-repo
-                                       :query-repo ::query-repo))
+                                     :update-repo ::update-repo
+                                     :query-repo ::query-repo
+                                     :connectable #(satisfies? repo/ToConnection %)))
 
 (defmethod ig/pre-init-spec :grafter.db/triplestore [_]
   :grafter.db/triplestore)
