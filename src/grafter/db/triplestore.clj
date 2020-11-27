@@ -8,10 +8,6 @@
             [clojure.spec.alpha :as s]
             [grafter.db.triplestore.impl :as impl]))
 
-;; TODO: remove this when Grafter is patched for xsd:Date literals
-(defmethod rio/backend-literal->grafter-type "http://www.w3.org/2001/XMLSchema#date" [literal]
-  (pr/raw-value literal))
-
 (derive :grafter.db/triplestore :duct/database)
 
 (defn init
