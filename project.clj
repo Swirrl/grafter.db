@@ -1,16 +1,16 @@
-(defproject grafter.db "0.8.8"
+(defproject grafter.db "0.9.0"
   :description "Grafter SPARQL database query tools"
   :url "https://github.com/Swirrl/grafter.db"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :min-lein-version "2.5.0"
+  :min-lein-version "2.9.8"
 
-  :dependencies [[org.clojure/clojure "1.10.0"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/core.cache "0.7.1"]
                  [integrant "0.7.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [grafter "2.0.2"]]
+                 [grafter "2.1.18"]]
 
   :profiles
   {:dev [:project/dev :profiles/dev]
@@ -26,20 +26,6 @@
                             "-XX:-OmitStackTraceInFastThrow"]
                  :resource-paths ["test/resources"]}}
 
-  :plugins [[s3-wagon-private "1.3.1"]]
-
   :jar-exclusions [#"^sparql"]
 
-  :release-tasks [["vcs" "assert-committed"]
-                  ["deploy" "swirrl-jars"]]
-
-  :repositories [["releases" {:sign-releases false
-                              :url "s3p://swirrl-jars/releases/"
-                              :username :env/AWS_ACCESS_KEY_ID
-                              :passphrase :env/AWS_SECRET_ACCESS_KEY
-                              :snapshots false}]
-                 ["snapshots" {:sign-releases false
-                               :url "s3p://swirrl-jars/snapshots/"
-                               :username :env/AWS_ACCESS_KEY_ID
-                               :passphrase :env/AWS_SECRET_ACCESS_KEY
-                               :releases false}]])
+  :deploy-repositories [["releases" :clojars]])
