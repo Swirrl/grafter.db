@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :min-lein-version "2.5.0"
+  :min-lein-version "2.9.1"
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/core.cache "0.7.1"]
@@ -26,20 +26,6 @@
                             "-XX:-OmitStackTraceInFastThrow"]
                  :resource-paths ["test/resources"]}}
 
-  :plugins [[s3-wagon-private "1.3.1"]]
-
   :jar-exclusions [#"^sparql"]
 
-  :release-tasks [["vcs" "assert-committed"]
-                  ["deploy" "swirrl-jars"]]
-
-  :repositories [["releases" {:sign-releases false
-                              :url "s3p://swirrl-jars/releases/"
-                              :username :env/AWS_ACCESS_KEY_ID
-                              :passphrase :env/AWS_SECRET_ACCESS_KEY
-                              :snapshots false}]
-                 ["snapshots" {:sign-releases false
-                               :url "s3p://swirrl-jars/snapshots/"
-                               :username :env/AWS_ACCESS_KEY_ID
-                               :passphrase :env/AWS_SECRET_ACCESS_KEY
-                               :releases false}]])
+  :deploy-repositories [["releases" :clojars]])
