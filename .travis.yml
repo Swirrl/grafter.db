@@ -3,11 +3,6 @@
 # The following must be configured in the Travis settings control panel:
 #
 # RELEASE_OAUTH_TOKEN (GitHub) with `repo` and `push` scopes
-#
-# Amazon S3
-# ---------
-#
-# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION
 
 language: clojure
 lein: 2.9.8
@@ -23,23 +18,14 @@ jdk:
 env:
   global:
   - ARTIFACTS_DIR=~/$TRAVIS_BUILD_NUMBER
-  - SWIRRL_JARS_BUCKET=swirrl-jars/releases/swirrl/grafter.db
   - TEMP_DIR=~/$TRAVIS_BUILD_NUMBER
 
 cache:
-  pip: true
   directories:
     - $HOME/.m2
 
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-
-before_install:
-  - pip install --upgrade requests pyopenssl; pip install --user awscli
-
 script:
   - lein jar
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then lein deploy; fi
 
 deploy:
   # DEPLOY to GitHub (when tagged)
