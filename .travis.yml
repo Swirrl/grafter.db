@@ -10,8 +10,10 @@
 # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_DEFAULT_REGION
 
 language: clojure
-sudo: required
-dist: xenial
+lein: 2.9.8
+arch: amd64
+
+dist: bionic
 services:
   - xvfb
 
