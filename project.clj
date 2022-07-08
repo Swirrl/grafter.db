@@ -4,13 +4,13 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :min-lein-version "2.9.1"
+  :min-lein-version "2.9.8"
 
-  :dependencies [[org.clojure/clojure "1.10.0"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/core.cache "0.7.1"]
                  [integrant "0.7.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [grafter "2.0.2"]]
+                 [grafter "2.1.18"]]
 
   :profiles
   {:dev [:project/dev :profiles/dev]
