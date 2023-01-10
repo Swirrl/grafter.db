@@ -21,8 +21,7 @@
 
    :profiles/dev {}
 
-   :project/dev {:dependencies [[duct/core "0.7.0"]]
-                 :jvm-opts [;; never collapse repeated stack traces in dev
+   :project/dev {:jvm-opts [;; never collapse repeated stack traces in dev
                             "-XX:-OmitStackTraceInFastThrow"]
                  :resource-paths ["test/resources"]}}
 
