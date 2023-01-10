@@ -29,3 +29,4 @@ profiles.clj
 auto-save-list
 tramp
 .\#*
+/test-results/
