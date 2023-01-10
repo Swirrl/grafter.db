@@ -9,4 +9,8 @@
                                 "test/resources"]
                   :extra-deps {lambdaisland/kaocha {:mvn/version "1.72.1136"}
                                lambdaisland/kaocha-junit-xml {:mvn/version "1.17.101"}}
-                  :main-opts ["-m" "kaocha.runner"]}}}
+                  :main-opts ["-m" "kaocha.runner"]}
+
+           :build {:deps {io.github.seancorfield/build-clj
+                          {:git/tag "v0.9.0" :git/sha "d758807"}}
+                   :ns-default build}}}
