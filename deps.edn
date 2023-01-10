@@ -3,7 +3,8 @@
         org.clojure/core.cache {:mvn/version "0.7.1"}
         integrant/integrant {:mvn/version "0.7.0"}
         com.taoensso/timbre {:mvn/version "4.10.0"}
-        grafter/grafter {:mvn/version "2.1.18"}}
+        io.github.swirrl/grafter.repository {:mvn/version "3.0.0-SNAPSHOT"}
+        }
 
  :aliases {:test {:extra-paths ["test"
                                 "test/resources"]
