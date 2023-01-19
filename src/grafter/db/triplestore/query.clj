@@ -3,7 +3,6 @@
             [clojure.java.io :as io]
             [integrant.core :as ig]
             [clojure.string :as str]
-            [taoensso.timbre :as log]
             [grafter-2.rdf4j.repository :as repo]
             [grafter-2.rdf4j.sparql :as sp]
             [grafter.db.triplestore.impl :as triplestore])
@@ -42,11 +41,9 @@
         (let [cache-key {:repo repo :sparql-query qry-str :bindings bindings}]
           (cache/lookup (swap! cache
                                #(if (cache/has? % cache-key)
-                                  (do (log/debug :cache-hit {:query qry-str :bindings bindings})
-                                      (cache/hit % cache-key))
+                                  (cache/hit % cache-key)
                                   (cache/miss % cache-key
-                                              (do (log/debug :cache-miss {:query qry-str :bindings bindings})
-                                                  @run-query))))
+                                              @run-query)))
                         cache-key))
         @run-query))))
 

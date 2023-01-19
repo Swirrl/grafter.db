@@ -2,7 +2,6 @@
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         org.clojure/core.cache {:mvn/version "0.7.1"}
         integrant/integrant {:mvn/version "0.7.0"}
-        com.taoensso/timbre {:mvn/version "4.10.0"}
         io.github.swirrl/grafter.repository {:mvn/version "3.0.0"}
         }
 
