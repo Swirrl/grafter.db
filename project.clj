@@ -10,7 +10,7 @@
                  [org.clojure/core.cache "0.7.1"]
                  [integrant "0.7.0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [grafter "2.1.18"]]
+                 [io.github.swirrl/grafter.repository "3.0.0"]]
 
   :profiles
   {:dev [:project/dev :profiles/dev]
