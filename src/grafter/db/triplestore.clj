@@ -1,6 +1,5 @@
 (ns grafter.db.triplestore
   (:require [clojure.java.io :as io]
-            [taoensso.timbre :as log]
             [grafter-2.rdf4j.io :as rio]
             [grafter-2.rdf.protocols :as pr]
             [grafter-2.rdf4j.repository :as repo]
@@ -14,14 +13,12 @@
   ([query-cache repo]
    (init query-cache repo :eager))
   ([query-cache repo evaluation-method]
-   (log/report ::starting-triplestore {:query-endpoint (str repo)})
    (impl/build-triple-store query-cache repo evaluation-method)))
 
 (defn- add-data! [update-endpoint load-files]
   (when (and update-endpoint (seq load-files))
     (with-open [conn (repo/->connection (repo/sparql-repo "" update-endpoint))]
       (doseq [f load-files]
-        (log/debug ::loading-file f)
         (pr/add conn (rio/statements (io/resource f))))
       (repo/shutdown conn))))
 
@@ -67,6 +64,5 @@
   :grafter.db/triplestore)
 
 (defmethod ig/halt-key! :grafter.db/triplestore [_ {:keys [repo _logger]}]
-  (log/report ::stopping-triplestore)
   (when repo
     (repo/shutdown repo)))

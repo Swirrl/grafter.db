@@ -1,5 +1,3 @@
-pom.xml
-pom.xml.asc
 *.jar
 *.class
 /lib/
@@ -29,3 +27,4 @@ profiles.clj
 auto-save-list
 tramp
 .\#*
+/test-results/

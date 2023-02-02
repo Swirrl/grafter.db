@@ -1,0 +1,62 @@
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  test:
+    docker:
+      - image: cimg/clojure:1.11
+        auth:
+          username: $DOCKERHUB_USERNAME # can specify string literal values
+          password: $DOCKERHUB_PASSWORD # or project environment variable reference
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "Test"
+          command: "clojure -T:build test"
+      - store_test_results:
+          path: test-results
+
+  deploy:
+    docker:
+      - image: cimg/clojure:1.11
+        auth:
+          username: $DOCKERHUB_USERNAME # can specify string literal values
+          password: $DOCKERHUB_PASSWORD # or project environment variable reference
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "Build jar"
+          command: "clojure -T:build build"
+      - run:
+          name: "Tag and deploy to clojars"
+          command: "clojure -T:build deploy"
+
+
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  build-workflow:
+    jobs:
+      - test:
+          context:
+            - swirrl-dockerhub-consumer
+          filters:  # required since `deploy` has tag filters AND requires `test`
+            tags:
+              only: /.*/
+      - deploy:
+          context:
+            - swirrl-clojars-publisher
+            - swirrl-dockerhub-consumer
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+          requires:
+            - test

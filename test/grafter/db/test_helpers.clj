@@ -1,41 +1,22 @@
 (ns grafter.db.test-helpers
-      (:require [clojure.test :refer :all]
-                [integrant.core :as ig]
-                [clojure.java.io :as io]
-                [duct.core :as duct]))
+  (:require [clojure.java.io :as io]
+            [grafter-2.rdf4j.repository :as repo]
+            [grafter-2.rdf.protocols :as pr]
+            [grafter-2.rdf4j.io :as rio]
+            [grafter.db.triplestore.query :as dbq])
+  (:import [org.eclipse.rdf4j.repository Repository]))
 
-  (def ^:dynamic *test-system*)
+(def ^:dynamic *test-repo*)
 
-  (defn read-config []
-        (duct/read-config (io/resource "test-config.edn")))
+(extend-protocol dbq/EvaluationMethod
+  Repository
+  (evaluation-method [this]
+    ;; force default evaluation in tests to :eager
+    :eager))
 
-  (defn prep-test-system [profiles]
-        (duct/load-hierarchy)
-        (-> (read-config)
-            (duct/prep-config profiles)))
+(defn load-test-repo []
+  (let [r (repo/sail-repo)]
+    (with-open [c (repo/->connection r)]
+      (pr/add c (rio/statements (io/resource "breeding-birds.nt"))))
 
-  (defn wrap-test-system
-        "Function for building a clojure.test fixture function that will start
-        & stop a Duct (Integrant) system.
-
-        You must supply a seq of duct profile keys to specify the test system
-        config e.g.:
-
-        (use-fixtures :once (h/wrap-test-system [:duct.profile/test]))"
-        [profiles]
-        (fn [t]
-          (let [sys (try
-                      (-> (prep-test-system profiles)
-                          (ig/init))
-                      (catch Exception ex
-                        (throw
-                          (ex-info "Error prepping test-system" {:profiles profiles} ex))))]
-            (binding [*test-system* sys]
-              (try
-                (t)
-                (finally
-                  (ig/halt! sys)))))))
-
-  (defmethod ig/prep-key :duct.profile/test [_ profile]
-             (-> (ig/prep-key :duct/profile profile)
-                 (assoc :duct.core/environment :test)))
+    r))
