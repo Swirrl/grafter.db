@@ -11,7 +11,7 @@ clojars.
 
 ## License
 
-Copyright © Swirrl 2022
+Copyright © TPXimpact Data Ltd 2023
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
